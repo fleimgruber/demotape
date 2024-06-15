@@ -1,38 +1,19 @@
-# demotape.py checks regulary the webstreams of all district parlaments 
-# in Vienna. If a webstream is online, it gets recorded into seperate 
-# directories per district.
+"""Downloads webstreams of district parliaments in Vienna
 
+If a webstream is online, it gets recorded into separate directories (per district)
+"""
+import argparse
 import os
-import sys
 import time
 from datetime import datetime
 import random
 import m3u8
 import youtube_dl
-import asyncio
 import concurrent.futures
 import ntpath
 import yaml
 from pathlib import Path
 
-config_path = Path(__file__).parent / './config.yaml'
-if config_path.exists():
-    with config_path.open() as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-else:
-    config = None
-
-try:
-    if sys.argv[1] and os.path.exists(sys.argv[1]):
-        ROOT_PATH = sys.argv[1]
-        print('Root path for downloaded streams: ' + ROOT_PATH)
-    else:
-        print('destination path does not exist')
-        sys.exit()
-except IndexError:
-    print('Script needs a valid destination path for recorded videos as argument')
-    print('For example: \ndemotape.py /path/to/videos')
-    sys.exit()
 
 
 def timestamp():
@@ -124,19 +105,19 @@ def download_stream(channel, dest_path):
         print("UnicodeDecodeError: " + str(e))
 
 
-def process_channel(channel):
+def process_channel(channel, root_path):
     #print('entered function process_channel with ' + channel['name'])
     while True:
 
         print(timestamp() + ' checking ' + channel['name'])
         if check_stream(channel['url']):
             print(channel['name'] + ': stream online! Downloading ...')
-            dest_dir = ROOT_PATH + '/' + channel['name'] +'/'
+            dest_dir = root_path + '/' + channel['name'] +'/'
             # create directory if it doesn't exist
             if not os.path.exists(dest_dir):
                 print('creating directory ' + dest_dir)
                 os.makedirs(dest_dir)
-            dest_path = get_destpath(channel) # dirctory + filename
+            dest_path = get_destpath(channel, root_path) # dirctory + filename
             download_stream(channel, dest_path) # also converts video
             print(timestamp() + " Uploading video " + dest_path)
             if config is not None:
@@ -173,18 +154,18 @@ def delete_video(file):
         print('Error while deleting %s' % (file))
 
 
-def get_destpath(channel):
+def get_destpath(channel, root_path):
     now = datetime.now() # current date and time
-    dest_dir = ROOT_PATH + '/' + channel['name'] +'/'
+    dest_dir = root_path + '/' + channel['name'] +'/'
     dest_filename = channel['name'] + "_" + now.strftime("%Y-%m-%d--%H.%M.%S") + '.mp4'
     return dest_dir + dest_filename
 
 
-def main():
+def main(root_path):
     channels = generate_channellist()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=23) as executor:
-        future_to_channel = {executor.submit(process_channel, channel): channel for channel in channels}
+        future_to_channel = {executor.submit(process_channel, channel, root_path): channel for channel in channels}
 
     for future in concurrent.futures.as_completed(future_to_channel):
         channel = future_to_channel[future]
@@ -199,15 +180,21 @@ def main():
     print('end main (this shouldn\'t happen!)')
 
 
-main()
+if __name__ == "__main__":
+    config_path = Path(__file__).parent / './config.yaml'
+    if config_path.exists():
+        with config_path.open() as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
+    else:
+        config = None
 
+    argparse.ArgumentParser
+    parser = argparse.ArgumentParser(prog='demotape',
+                                     description='Downloads webstreams of district parliaments in Vienna')
 
+    parser.add_argument('-o', '--output-path', help='root path for downloaded streams', required=True)
 
+    args = parser.parse_args()
+    root_path = args.output_path
 
-
-
-#test_channel = {
-#           'name': 'Test Channel', 
-#           'url': 'https://1000338copo-app2749759488.r53.cdn.tv1.eu/1000518lf/1000338copo/live/app2749759488/w2928771075/live247.smil/playlist.m3u8'
-#       }
-#download_stream(test_channel)
+    raise SystemExit(main(root_path))
