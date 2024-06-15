@@ -1,0 +1,32 @@
+[project]
+name = "demotape"
+version = "0.1.0"
+description = "Constantly monitor Wien.gv.at for new livestreams of Bezirksvertretungssitzungen and download everything you can get."
+authors = [
+    { name = "Bernhard Hayden", email = "hello@nini.su"},
+    { name = "Andreas Demmelbauer", email = ""},
+    { name = "Fabio Leimgruber", email = "fabio.leimgruber@posteo.eu" },
+]
+dependencies = [
+    "m3u8>=5.0.0",
+    "youtube-dl>=2021.12.17",
+    "pyyaml>=6.0.1",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest>=8.2.2",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = []
