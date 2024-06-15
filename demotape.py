@@ -90,13 +90,15 @@ def download_stream(channel, dest_path):
             # should just stop after a few retries and start again instead of hanging in the loop of trying to download
             'retries': 3, 
             'fragment-retries': 3,
-            'progress_hooks': [my_ytdl_hook]
+            'progress_hooks': [my_ytdl_hook],
+            'nocheckcertificate': True,
         }
     ytdl = youtube_dl.YoutubeDL(ytdl_opts)
 
     try:
         print(timestamp() + " Downloading: " + channel['url'])
-        ytdl.download([channel['url']])
+        return_code = ytdl.download([channel['url']])
+        assert return_code
     except (youtube_dl.utils.DownloadError) as e:
         print(timestamp() + " Download error: " + str(e))
     except (youtube_dl.utils.SameFileError) as e:
