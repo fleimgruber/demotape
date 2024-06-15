@@ -9,6 +9,19 @@
 #   generate-hashes: false
 
 -e file:.
+anyio==4.4.0
+    # via httpx
+certifi==2024.6.2
+    # via httpcore
+    # via httpx
+h11==0.14.0
+    # via httpcore
+httpcore==1.0.5
+    # via httpx
+httpx==0.27.0
+idna==3.7
+    # via anyio
+    # via httpx
 iniconfig==2.0.0
     # via pytest
 m3u8==5.0.0
@@ -20,5 +33,8 @@ pluggy==1.5.0
 pytest==8.2.2
 pyyaml==6.0.1
     # via demotape
+sniffio==1.3.1
+    # via anyio
+    # via httpx
 youtube-dl==2021.12.17
     # via demotape
